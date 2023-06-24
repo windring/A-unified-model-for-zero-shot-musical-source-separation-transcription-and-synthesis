@@ -51,7 +51,7 @@ def pack_urmp_dataset_to_hdf5(args):
 			continue
 		meta_data = folder.split('_')
 		if len(meta_data) < 4:
-			continue	
+			continue
 		audios_num += 1
 		id = meta_data[0]
 		name = meta_data[1]
@@ -63,13 +63,13 @@ def pack_urmp_dataset_to_hdf5(args):
 		for j, s in enumerate(sources):
 			audio['separated_sources'] += [os.path.join(folder, f'AuSep_{j + 1}_{s}_{id}_{name}.wav')]
 			audio['note_annotations'] += [os.path.join(folder, f'Notes_{j + 1}_{s}_{id}_{name}.txt')]
-	
+
 		meta_dict['audio_filename'] += [audio]
 
 	feature_time = time.time()
 	print(f"The total number of the mixture audio is {audios_num}")
 	def process_unit(n):
-	
+
 		name = meta_dict['audio_filename'][n]['mix']
 		print(name)
 		audio_path = os.path.join(dataset_dir, name)
@@ -102,7 +102,7 @@ def pack_urmp_dataset_to_hdf5(args):
 			target_processor = TargetProcessor(duration, FRAMES_PER_SEC, BEGIN_NOTE, NOTES_NUM_EXCLUDE_SILENCE)
 			target_dict = target_processor.process(0, note_annotations)
 			frame_roll = np.array(target_dict['frame_roll'], dtype=np.int16)
-			
+
 
 			train_packed_hdf5_path = os.path.join(feature_dir, '{}._TRAIN.h5'.format(os.path.splitext(name)[0]))
 			test_packed_hdf5_path = os.path.join(feature_dir, '{}._TEST.h5'.format(os.path.splitext(name)[0]))
@@ -121,8 +121,8 @@ def pack_urmp_dataset_to_hdf5(args):
 					shift_audio = audio
 					shift_dense_audio = dense_audio
 				else:
-					shift_audio = librosa.effects.pitch_shift(hq_audio, sr=SAMPLE_RATE * 2, n_steps=shift_pitch)	
-					shift_audio = librosa.core.resample(shift_audio, orig_sr=SAMPLE_RATE * 2, target_sr=SAMPLE_RATE)	
+					shift_audio = librosa.effects.pitch_shift(hq_audio, sr=SAMPLE_RATE * 2, n_steps=shift_pitch)
+					shift_audio = librosa.core.resample(shift_audio, orig_sr=SAMPLE_RATE * 2, target_sr=SAMPLE_RATE)
 					shift_dense_audio = librosa.effects.pitch_shift(dense_hq_audio, sr=SAMPLE_RATE * 2, n_steps=shift_pitch)
 					shift_dense_audio = librosa.core.resample(shift_dense_audio, orig_sr=SAMPLE_RATE * 2, target_sr=SAMPLE_RATE)
 
@@ -139,11 +139,11 @@ def pack_urmp_dataset_to_hdf5(args):
 				hf.create_dataset(name='waveform', data=float32_to_int16(audio), dtype=np.int16)
 				hf.create_dataset(name='frame_roll', data=frame_roll, dtype=np.int16)
 
-			with h5py.File(test_packed_hdf5_path, 'w') as hf:				
+			with h5py.File(test_packed_hdf5_path, 'w') as hf:
 				hf.create_dataset(name='waveform', data=float32_to_int16(audio), dtype=np.int16)
 				hf.create_dataset(name='waveform_path', data=[audio_path.encode()], dtype='S200')
 				hf.create_dataset(name='note_annotations_txt', data=[ref_path.encode()], dtype='S200')
-				hf.create_dataset(name='frame_roll', data=frame_roll, dtype=np.int16)	
+				hf.create_dataset(name='frame_roll', data=frame_roll, dtype=np.int16)
 
 	def process_group(st, ed, total_num, pid):
 		print(f"process {pid + 1} starts")
@@ -167,4 +167,4 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 	pack_urmp_dataset_to_hdf5(args)
-		
+
